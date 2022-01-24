@@ -1,5 +1,4 @@
-```bash
-#!/bin/sh
+#!/bin/bash
 INSTANCE_NAME=nucleus-jumphost-716
 PROJECT_ID=qwiklabs-gcp-02-bde452a033ef
 PORT=8081
@@ -65,4 +64,3 @@ gcloud compute forwarding-rules create http-content-rule \
     --global \
     --target-http-proxy http-lb-proxy \
     --ports 80
-```
