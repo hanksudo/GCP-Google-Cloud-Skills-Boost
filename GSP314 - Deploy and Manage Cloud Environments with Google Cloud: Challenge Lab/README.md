@@ -40,4 +40,13 @@ Set notification channel
 ```bash
 gcloud container clusters get-credentials spinnaker-tutorial --zone us-east1-b --project qwiklabs-gcp-03-109b0c15021b \
  && kubectl port-forward $(kubectl get pod --selector="app=spin,cluster=spin-deck" --output jsonpath='{.items[0].metadata.name}') 8080:9000
+gcloud source repos clone sample-app
+cd sample-app
+
+git config --global user.email "$(gcloud config get-value core/account)"
+git config --global user.name "$(gcloud config get-value core/account)"
+
+git commit -m 'trigger'
+git tag v1.0.1
+git push --tags
 ```
