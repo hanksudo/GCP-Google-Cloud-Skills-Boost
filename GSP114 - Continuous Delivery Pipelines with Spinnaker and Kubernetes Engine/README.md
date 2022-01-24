@@ -151,3 +151,14 @@ sed s/PROJECT/$PROJECT/g spinnaker/pipeline-deploy.json > pipeline.json
 
 - Go WebPreview on Port 8080
 - Manually trigger sample app on Spinnaker UI
+
+### Trigger your pipeline from code changes
+
+```bash
+# change color
+sed -i 's/orange/blue/g' cmd/gke-info/common-service.go
+
+git commit -am "Change color to blue"
+git tag v1.0.1
+git push --tags
+```
