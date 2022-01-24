@@ -2,6 +2,8 @@
 
 ```bash
 gcloud config set compute/zone us-central1-f
+
+# Create cluster
 gcloud container clusters create spinnaker-tutorial \
     --machine-type=n1-standard-2
 
@@ -23,7 +25,6 @@ gcloud projects add-iam-policy-binding "$PROJECT" \
 # Download service account key
 gcloud iam service-accounts keys create spinnaker-sa.json \
      --iam-account "$SA_EMAIL"
-)
 ```
 
 ## Setup Cloud Pub/Sub to trigger Spinnaker pipelines
@@ -36,10 +37,6 @@ gcloud pubsub subscriptions create gcr-triggers \
     --topic projects/"${PROJECT}"/topics/gcr
 
 # Give spinnaker service account permissions to read gcr-triggers subscription
-export SA_EMAIL=$(gcloud iam service-accounts list \
-    --filter="displayName:spinnaker-account" \
-    --format='value(email)')
-
 gcloud beta pubsub subscriptions add-iam-policy-binding gcr-triggers \
     --role roles/pubsub.subscriber --member serviceAccount:"$SA_EMAIL"
 ```
@@ -52,8 +49,8 @@ kubectl create clusterrolebinding user-admin-binding \
     --clusterrole=cluster-admin --user=$(gcloud config get-value account)
 
 # Grant Spinnaker the cluster-admin role so it can deploy resources across all namespaces
-kubectl create clusterrolebinding --clusterrole=cluster-admin \
-    --serviceaccount=default:default spinnaker-admin
+kubectl create clusterrolebinding spinnaker-admin \
+    --clusterrole=cluster-admin --serviceaccount=default:default
 
 # Helm repositories
 helm repo add stable https://charts.helm.sh/stable
@@ -81,14 +78,14 @@ kubectl port-forward --namespace default $DECK_POD 8080:9000 >> /dev/null &
 ```bash
 # sample source code
 gsutil -m cp -r gs://spls/gsp114/sample-app.tar .
-mkdir sample-app
-tar xvf sample-app.tar -C ./sample-app
-cd sample-app
+mkdir sample-app && tar xvf sample-app.tar -C ./sample-app && cd sample-app
 
 git config --global user.email "$(gcloud config get-value core/account)"
-git config --global user.name "[USERNAME]"
+git config --global user.name "$(gcloud config get-value core/account)"
 
 git init && git add . && git commit -m "Initial commit"
+
+# Create and Push code to repository
 gcloud source repos create sample-app
 git config credential.helper gcloud.sh
 git remote add origin https://source.developers.google.com/p/$PROJECT/r/sample-app
@@ -129,8 +126,7 @@ This should trigger Cloud Build
 ### Install spin CLI for managing Spinnaker
 
 ```bash
-curl -LO https://storage.googleapis.com/spinnaker-artifacts/spin/1.14.0/linux/amd64/spin
-chmod +x spin
+curl -LO https://storage.googleapis.com/spinnaker-artifacts/spin/1.14.0/linux/amd64/spin && chmod +x spin
 ```
 
 ### Create the deployment pipeline
@@ -151,6 +147,8 @@ sed s/PROJECT/$PROJECT/g spinnaker/pipeline-deploy.json > pipeline.json
 
 - Go WebPreview on Port 8080
 - Manually trigger sample app on Spinnaker UI
+
+After build, go to Load balancers and check the IP of frontend to see the result.
 
 ### Trigger your pipeline from code changes
 
