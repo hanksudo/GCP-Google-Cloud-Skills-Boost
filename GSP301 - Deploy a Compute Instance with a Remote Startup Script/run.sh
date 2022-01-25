@@ -1,6 +1,6 @@
 #!/bin/bash
-gcloud config set compute/region us-east1
-gcloud config set compute/zone us-east1-a
+gcloud config set compute/region us-central1
+gcloud config set compute/zone us-central1-a
 
 gsutil mb gs://${DEVSHELL_PROJECT_ID}
 
